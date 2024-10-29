@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>Spring Boot WebSocket Chat Application</title>
+    <link rel="stylesheet" href="/css/main.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+<noscript>
+    <h2 class="text-2xl font-bold text-red-600">Sorry! Your browser doesn't support Javascript</h2>
+</noscript>
+
+<div id="username-page" class="min-h-screen flex items-center justify-center">
+    <div class="username-page-container bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">Nhập thông tin đăng nhập</h1>
+        <form id="usernameForm" name="usernameForm" class="space-y-6">
+            <div class="form-group">
+                <input type="text" id="name" placeholder="Tên đăng nhập" autocomplete="off" 
+                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4" />
+                <input type="password" id="password" placeholder="Mật khẩu" autocomplete="off"
+                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div class="form-group">
+                <button type="submit" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200">
+                    Bắt đầu trò chuyện
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="chat-page" class="hidden min-h-screen bg-gray-100">
+    <div class="chat-container max-w-4xl mx-auto bg-white shadow-lg rounded-lg">
+        <div class="chat-header bg-blue-500 text-white p-4 rounded-t-lg">
+            <h2 class="text-xl font-semibold">Spring WebSocket Chat Demo</h2>
+        </div>
+        <div class="connecting p-4 text-gray-600 text-center">
+            Đang kết nối...
+        </div>
+        <ul id="messageArea" class="p-6 space-y-4 h-[500px] overflow-y-auto">
+        </ul>
+        <form id="messageForm" name="messageForm" class="p-4 border-t">
+            <div class="form-group">
+                <div class="flex gap-2">
+                    <input type="text" id="message" placeholder="Nhập tin nhắn..." autocomplete="off" 
+                        class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                    <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition duration-200">
+                        Gửi
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>
