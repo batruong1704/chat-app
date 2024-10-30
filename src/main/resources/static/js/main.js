@@ -51,7 +51,7 @@ function onError(error) {
     connectingElement.style.color = 'red';
 }
 
-
+ời
 function sendMessage(event) {
     var messageContent = messageInput.value.trim();
     if(messageContent && stompClient) {

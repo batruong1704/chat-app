@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: Chat App
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/chat_app
+    username: root
+    password: admin123
+  jpa:
+    show-sql: true
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        format_sql: true
