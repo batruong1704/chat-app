@@ -4,18 +4,30 @@ import LoginForm from "./components/Login/LoginForm";
 import { User } from "./types";
 
 const App: React.FC = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
-  console.log("Current user state:", user);
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUser(null);
+  };
 
   return (
-      <div className="App">
-        {!user ? (
-            <LoginForm onLogin={setUser} />
-        ) : (
-            <ChatContainer username={user.username} />
-        )}
-      </div>
+    <div className="App">
+      {!isLoggedIn ? (
+        <LoginForm onLogin={(userData) => {
+          setUser(userData);
+          setIsLoggedIn(true);
+          console.log(userData);
+        }} />
+      ) : (
+        <ChatContainer 
+          username={user?.username || ''} 
+          userId={user?.userId || ''}
+          onLogout={handleLogout}
+        />
+      )}
+    </div>
   );
 };
 
