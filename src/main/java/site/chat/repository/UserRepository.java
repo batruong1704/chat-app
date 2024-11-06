@@ -18,4 +18,6 @@ public interface UserRepository extends JpaRepository<UserModel, UUID> {
 
     // Trả về boolean
     boolean existsByUsername(String username);
+
+
 }

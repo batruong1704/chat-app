@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import ChatContainer from "./components/Chat/ChatContainer";
+import ChatApp from "./components/Chat/ChatApp";
 import LoginForm from "./components/Login/LoginForm";
 import { User } from "./types";
+
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -13,22 +14,22 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="App">
-      {!isLoggedIn ? (
-        <LoginForm onLogin={(userData) => {
-          setUser(userData);
-          setIsLoggedIn(true);
-          console.log(userData);
-        }} />
-      ) : (
-        <ChatContainer 
-          username={user?.username || ''} 
-          userId={user?.userId || ''}
-          onLogout={handleLogout}
-        />
-      )}
-    </div>
+      <div className="App">
+        {!isLoggedIn ? (
+            <LoginForm onLogin={(userData) => {
+              setUser(userData);
+              setIsLoggedIn(true);
+              console.log(userData);
+            }} />
+        ) : (
+            <ChatApp
+                username={user?.username || ''}
+                currentUserId={user?.id || ''}
+                onLogout={handleLogout}
+            />
+        )}
+      </div>
   );
 };
 
-export default App
+export default App;

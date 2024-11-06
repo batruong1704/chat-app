@@ -3,8 +3,6 @@ package site.chat.config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
-import org.springframework.messaging.MessagingException;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
@@ -19,7 +17,6 @@ import site.chat.services.UserService;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -114,12 +111,23 @@ public class WebSocketEventListener {
                 return;
             }
 
-            sessionUserMap.remove(sessionId);
-            userService.updateStatus(userId, false);
+            handleUserDisconnection(sessionId, userId, userModel.getUsername());
 
+        } catch (Exception e) {
+            log.error("Error handling disconnect: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to handle disconnect", e);
+        }
+    }
+
+    private void handleUserDisconnection(String sessionId, UUID userId, String username) {
+        try {
+            log.info("User left: {}", username);
+            sessionUserMap.remove(sessionId);
+
+            userService.updateStatus(userId, false);
             UserModel userStatus = UserModel.builder()
                     .id(userId)
-                    .username(userModel.getUsername())
+                    .username(username)
                     .isOnline(false)
                     .lastSeen(LocalDateTime.now())
                     .build();
@@ -127,7 +135,7 @@ public class WebSocketEventListener {
 
             MessageDTO leaveMessage = MessageDTO.builder()
                     .type(MessageType.LEAVE)
-                    .content(userModel.getUsername() + " đã rời đi!")
+                    .content(username + " has left!")
                     .senderId(userId)
                     .build();
             chatService.saveMessageToPublicRoom(leaveMessage);
@@ -135,13 +143,14 @@ public class WebSocketEventListener {
 
             broadcastActiveUsers();
 
-            log.info("User disconnected - Username: {}, UserId: {}, SessionId: {}",
-                    userModel.getUsername(), userId, sessionId);
-
+            log.info("User left - Username: {}, UserId: {}, SessionId: {}",
+                    username, userId, sessionId);
         } catch (Exception e) {
-            log.error("Error handling disconnect: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to handle disconnect", e);
+            log.error("Error handling user leave: {}", e.getMessage(), e);
         }
+    }
 
+    public void handleUserLeft(String sessionId, UUID userId, String username) {
+        handleUserDisconnection(sessionId, userId, username);
     }
 }

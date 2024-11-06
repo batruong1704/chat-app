@@ -24,8 +24,8 @@ import java.util.UUID;
 public class RoomMemberService{
     private final RoomMemberRepository roomMemberRepository;
 
-    public ResponseObject<?> findRoomNameByUsername(String username){
-        List<RoomModel> roomList = roomMemberRepository.findRoomNamesByUsername(username);
+    public ResponseObject<?> findRoomIdByUserId(UUID id){
+        List<RoomModel> roomList = roomMemberRepository.findRoomIdByUserId(id);
         if (!roomList.isEmpty()) {
             return ResponseObject.success(StatusMessage.SUCCESS, roomList);
         }

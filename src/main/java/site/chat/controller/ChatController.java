@@ -6,10 +6,10 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import site.chat.config.WebSocketEventListener;
-import site.chat.dto.LogoutDTO;
 import site.chat.dto.MessageDTO;
 import site.chat.repository.UserRepository;
 import site.chat.services.ChatService;
@@ -25,36 +25,38 @@ public class ChatController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final WebSocketEventListener webSocketEventListener;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     @MessageMapping("/chat.sendMessage")
     @SendTo("/topic/public")
     @CrossOrigin("http://localhost:5173/")
-    public MessageDTO sendMessage(
-            @Payload MessageDTO chatMessage
-    ) {
-        chatService.saveMessageToPublicRoom(chatMessage);
+    public MessageDTO sendMessage(@Payload MessageDTO chatMessage) {
+        chatService.saveMessageToRoom(chatMessage);
+        simpMessagingTemplate.convertAndSend("/topic/room/" + chatMessage.getRoomId(), chatMessage);
         return chatMessage;
     }
 
     @MessageMapping("/chat.addUser")
     @SendTo("/topic/public")
     @CrossOrigin("http://localhost:5173/")
-    public MessageDTO addUser(
-            @Payload MessageDTO input,
-            SimpMessageHeaderAccessor headerAccessor
-    ) {
+    public MessageDTO addUser(@Payload MessageDTO input, SimpMessageHeaderAccessor headerAccessor) {
         UUID userId = input.getSenderId();
         String username = userService.convertOptionalToModelForUser(userRepository.findById(userId)).getUsername();
         log.info("Username: " + username);
 
         Objects.requireNonNull(headerAccessor.getSessionAttributes()).put("username", username);
         Objects.requireNonNull(headerAccessor.getSessionAttributes()).put("userId", userId);
-        webSocketEventListener.handleUserJoined(
-                headerAccessor.getSessionId(),
-                userId,
-                username
-        );
+        webSocketEventListener.handleUserJoined(headerAccessor.getSessionId(), userId, username);
         return input;
     }
 
+    @MessageMapping("/chat.leave")
+    @CrossOrigin("http://localhost:5173/")
+    public void leaveUser(@Payload MessageDTO input, SimpMessageHeaderAccessor headerAccessor) {
+        UUID userId = input.getSenderId();
+        String username = userService.convertOptionalToModelForUser(userRepository.findById(userId)).getUsername();
+        log.info("Username: " + username);
+
+        webSocketEventListener.handleUserLeft(headerAccessor.getSessionId(), userId, username);
+    }
 }

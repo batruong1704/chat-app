@@ -23,4 +23,9 @@ public interface RoomMemberRepository extends JpaRepository<RoomMembersModel, UU
             "WHERE u.username = :username")
     List<RoomModel> findRoomNamesByUsername(@Param("username") String username);
 
+    @Query("SELECT rm.room " +
+            "FROM RoomMembersModel rm " +
+            "JOIN rm.user u " +
+            "WHERE u.id = :id")
+    List<RoomModel> findRoomIdByUserId(@Param("id") UUID id);
 }

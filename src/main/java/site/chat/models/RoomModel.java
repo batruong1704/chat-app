@@ -28,7 +28,7 @@ public class RoomModel {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    private enum RoomType {
+    public enum RoomType {
         PUBLIC,
         GROUP,
         PRIVATE

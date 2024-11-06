@@ -38,6 +38,21 @@ public class ChatService extends BaseService<MessagesModel, UUID, MessagesReposi
                 .orElseThrow(() -> new EntityNotFoundException("Room not found: " + roomId));
     }
 
+    public void saveMessageToRoom (MessageDTO input){
+        Optional<UserModel> senderModelOpt = userRepository.findById(input.getSenderId());
+        UserModel senderModel = userService.convertOptionalToModelForUser(senderModelOpt);
+        Optional<RoomModel> roomModelOpt = roomRepository.findById(input.getRoomId());
+        RoomModel roomModel = roomModelOpt.orElseThrow(() -> new EntityNotFoundException("Room not found: " + input.getRoomId()));
+        save(MessagesModel.builder()
+                .senderId(senderModel)
+                .content(input.getContent())
+                .messageType(input.getType())
+                .roomId(roomModel)
+                .createdAt(LocalDateTime.now())
+                .build()
+        );
+    }
+
     public void saveMessageToPublicRoom (MessageDTO input){
         RoomModel publicRoom = findPublicRoomChat();
         Optional<UserModel> senderModelOpt = userRepository.findById(input.getSenderId());

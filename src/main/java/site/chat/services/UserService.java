@@ -85,5 +85,12 @@ public class UserService extends BaseService<UserModel, UUID, UserRepository>{
         }
     }
 
+    public ResponseObject<?> getUsernameById(UUID id) {
+        Optional<UserModel> data = userRepository.findById(id);
+        if (data.isPresent()) {
+            return ResponseObject.success(StatusMessage.SUCCESS, data.get().getUsername());
+        }
+        return ResponseObject.error(StatusMessage.NOT_FOUND);
+    }
 
 }

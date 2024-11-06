@@ -3,9 +3,9 @@ import SockJS from 'sockjs-client';
 import { Client, Message as StompMessage } from '@stomp/stompjs';
 import { Message, User } from '../types';
 
-export const useWebSocket = (username: string, userId: string) => {
+export const useWebSocket = (username: string, userId: string, roomId: string) => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [connected, setConnected] = useState(false);
+  const [connected, setConnected] = useState<boolean>(false);
   const [users, setUsers] = useState<User[]>([]);
   const client = useRef<Client | null>(null);
   const isConnected = useRef(false);
@@ -17,7 +17,8 @@ export const useWebSocket = (username: string, userId: string) => {
         webSocketFactory: () => socket,
         connectHeaders: {
           username: username,
-          userId: userId
+          userId: userId,
+          roomId: roomId
         },
         onConnect: () => {
           isConnected.current = true;
@@ -26,6 +27,7 @@ export const useWebSocket = (username: string, userId: string) => {
           // Subscribe to public topic
           client.current?.subscribe('/topic/public', (message: StompMessage) => {
             const newMessage = JSON.parse(message.body) as Message;
+            newMessage.username = newMessage.username === username ? 'You' : newMessage.username;
             setMessages(prev => [...prev, newMessage]);
           });
 
@@ -33,14 +35,16 @@ export const useWebSocket = (username: string, userId: string) => {
           client.current?.subscribe('/topic/user-status', (message: StompMessage) => {
             const userStatus = JSON.parse(message.body);
             setUsers(prevUsers => {
-              const userIndex = prevUsers.findIndex(u => u.userId === userStatus.id);
+              const userIndex = prevUsers.findIndex(u => u.id === userStatus.id);
               if (userIndex === -1) {
                 const newUser: User = {
-                  userId: userStatus.id,
+                  id: userStatus.id,
                   username: userStatus.username,
-                  status: userStatus.isOnline ? 'ONLINE' : 'OFFLINE',
+                  isOnline: userStatus.isOnline,
                   email: '',
-                  lastSeen: userStatus.lastSeen
+                  lastSeen: userStatus.lastSeen,
+                  createdAt: "", password: "", updatedAt: ""
+
                 };
                 return [...prevUsers, newUser];
               }
@@ -48,7 +52,7 @@ export const useWebSocket = (username: string, userId: string) => {
               const updatedUsers = [...prevUsers];
               updatedUsers[userIndex] = {
                 ...updatedUsers[userIndex],
-                status: userStatus.isOnline ? 'ONLINE' : 'OFFLINE',
+                isOnline: userStatus.isOnline,
                 lastSeen: userStatus.lastSeen
               };
               return updatedUsers;
@@ -58,12 +62,11 @@ export const useWebSocket = (username: string, userId: string) => {
           client.current?.subscribe('/topic/users', (message: StompMessage) => {
             const response = JSON.parse(message.body);
             if (response.success && Array.isArray(response.data)) {
-              console.log('Users: ', response.data);
               const mappedUsers: User[] = response.data.map((user: any) => ({
                 userId: user.id,
                 username: user.username,
                 email: user.email,
-                status: user.online ? 'ONLINE' : 'OFFLINE',
+                status: user.online,
                 lastSeen: user.lastSeen,
               }));
               setUsers(mappedUsers);
@@ -101,7 +104,7 @@ export const useWebSocket = (username: string, userId: string) => {
     };
   }, [username, userId]);
 
-  const sendMessage = (content: string) => {
+  const sendMessage = (content: string, roomId: string) => {
     if (connected && content.trim()) {
       client.current?.publish({
         destination: '/app/chat.sendMessage',
@@ -109,7 +112,8 @@ export const useWebSocket = (username: string, userId: string) => {
           senderId: userId,
           sender: username,
           content: content,
-          type: 'CHAT'
+          type: 'CHAT',
+          roomId: roomId
         })
       });
     }

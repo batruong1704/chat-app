@@ -29,8 +29,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         onLogin({
           username: response.data.data.username,
           password: response.data.data.password,
-          userId: response.data.data.id,
-          status: 'ONLINE'
+          id: response.data.data.id,
+          isOnline: response.data.data.online=true,
+          email: response.data.data.email,
+          createdAt: response.data.data.createdAt,
+          updatedAt: response.data.data.updatedAt,
         });
 
       } else {

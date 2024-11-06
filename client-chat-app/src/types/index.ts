@@ -1,24 +1,23 @@
 export interface User {
-    id?: string;
-    userId: string;
+    id: string;
     username: string;
-    email?: string;
-    password?: string;
+    email: string;
+    password: string;
     avatarUrl?: string | null;
+    isOnline: boolean;
     lastSeen?: string | null;
-    createdAt?: string;
-    updatedAt?: string;
-    online?: boolean;
-    status: 'ONLINE' | 'OFFLINE';
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface Message {
-    id?: string;
+    id: string;
+    roomId: string;
     senderId: string;
-    sender: string;
+    username: string;
     content: string;
-    type: 'CHAT' | 'JOIN' | 'LEAVE';
-    timestamp?: string;
+    messageType: 'CHAT' | 'JOIN' | 'LEAVE';
+    createdAt: string;
 }
 
 export interface ChatMessage {
@@ -26,4 +25,22 @@ export interface ChatMessage {
     sender: string;
     timestamp: string;
     type: 'CHAT' | 'JOIN' | 'LEAVE';
+}
+
+export interface Room {
+    id: string;
+    name: string;
+    type: RoomType;
+    createdAt: string;
+}
+
+export enum RoomType {
+    PUBLIC = 'PUBLIC',
+    GROUP = 'GROUP',
+    PRIVATE = 'PRIVATE'
+}
+
+export interface MessageDTO {
+    message: Message;
+    roomId: string;
 }

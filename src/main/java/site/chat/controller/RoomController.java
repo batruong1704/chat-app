@@ -1,10 +1,8 @@
 package site.chat.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import site.chat.dto.CreatePrivateRoomDTO;
 import site.chat.dto.response.ResponseObject;
 import site.chat.services.RoomService;
 
@@ -24,4 +22,10 @@ public class RoomController {
     public ResponseObject<?> getPublicRoom(){
         return roomService.getPublicRoom();
     }
+
+    @PostMapping("/createPrivateRoom")
+    public ResponseObject<?> createPrivateRoom(@RequestBody CreatePrivateRoomDTO createPrivateRoomDTO){
+        return roomService.createPrivateRoom(createPrivateRoomDTO);
+    }
+
 }

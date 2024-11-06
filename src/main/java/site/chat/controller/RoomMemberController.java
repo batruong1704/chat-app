@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.*;
 import site.chat.dto.response.ResponseObject;
 import site.chat.services.RoomMemberService;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/roomMember")
 @RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
@@ -13,9 +15,9 @@ import site.chat.services.RoomMemberService;
 public class RoomMemberController {
     private final RoomMemberService roomMemberService;
 
-    @GetMapping("/findRoomByUsername")
-    public ResponseObject<?> findRoomByUsername(@RequestParam String username) {
-        return roomMemberService.findRoomNameByUsername(username);
+    @GetMapping("/findRoomIdByUserId/{id}")
+    public ResponseObject<?> findRoomIdByUserId(@PathVariable UUID id) {
+        return roomMemberService.findRoomIdByUserId(id);
     }
 
 }
