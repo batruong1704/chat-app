@@ -15,7 +15,7 @@ const ChatApp: React.FC<ChatAppProps> = ({ username, currentUserId }) => {
     const [activeTab, setActiveTab] = useState<'chat' | 'members'>('chat');
     const [activeRoom, setActiveRoom] = useState<Room | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
-
+    const [isRoomLoaded, setIsRoomLoaded] = useState(false);
     useEffect(() => {
         const initializeDefaultRoom = async () => {
             try {
@@ -24,6 +24,7 @@ const ChatApp: React.FC<ChatAppProps> = ({ username, currentUserId }) => {
                     setActiveRoom(publicRoom);
                     const messages = await fetchMessagesByRoomId(publicRoom.id);
                     setMessages(messages);
+                    setIsRoomLoaded(true);
                 }
             } catch (error) {
                 console.error('Failed to fetch public room:', error);
@@ -32,7 +33,6 @@ const ChatApp: React.FC<ChatAppProps> = ({ username, currentUserId }) => {
 
         initializeDefaultRoom();
     }, []);
-
 
     const handleRoomSelect = async (room: Room) => {
         setActiveRoom(room);
@@ -43,13 +43,13 @@ const ChatApp: React.FC<ChatAppProps> = ({ username, currentUserId }) => {
             console.error('Failed to fetch messages:', error);
         }
     };
+
     const handleCreateRoom = () => {
         // handle creating a new room
     };
 
     return (
         <div className="flex h-screen bg-gray-100">
-            {/* Menu */}
             <div className="bg-white border-r w-72 flex flex-col">
                 <div className="p-4 border-b">
                     <div className="flex gap-2 mb-4">
@@ -83,7 +83,6 @@ const ChatApp: React.FC<ChatAppProps> = ({ username, currentUserId }) => {
                 )}
             </div>
 
-            {/* Chat Box */}
             {activeRoom && (
                 <ChatBox
                     roomId={activeRoom.id}
@@ -91,6 +90,7 @@ const ChatApp: React.FC<ChatAppProps> = ({ username, currentUserId }) => {
                     username={username}
                     currentUserId={currentUserId}
                     messages={messages}
+                    isRoomLoaded={isRoomLoaded} // Pass isRoomLoaded as a prop
                 />
             )}
         </div>

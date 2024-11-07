@@ -11,13 +11,18 @@ export interface User {
 }
 
 export interface Message {
-    id: string;
-    roomId: string;
+    idMessage: string;
+    type: string;
     senderId: string;
-    username: string;
+    senderName: string;
     content: string;
-    messageType: 'CHAT' | 'JOIN' | 'LEAVE';
     createdAt: string;
+}
+
+export interface RoomMessages {
+    idRoom: string;
+    roomName: string;
+    messages: Message[];
 }
 
 export interface ChatMessage {
@@ -38,6 +43,12 @@ export enum RoomType {
     PUBLIC = 'PUBLIC',
     GROUP = 'GROUP',
     PRIVATE = 'PRIVATE'
+}
+
+export enum MessageType {
+    JOIN = 'JOIN',
+    LEAVE = 'LEAVE',
+    CHAT = 'CHAT'
 }
 
 export interface MessageDTO {

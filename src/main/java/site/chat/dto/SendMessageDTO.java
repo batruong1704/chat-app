@@ -1,5 +1,6 @@
 package site.chat.dto;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import lombok.Builder;
@@ -8,9 +9,11 @@ import lombok.Setter;
 import site.chat.models.MessageType;
 
 @Getter @Setter @Builder
-public class MessageDTO {
+public class DetailMessageDTO {
+    private UUID idMessage;
     private MessageType type;
-    private String content;
     private UUID senderId;
-    private UUID roomId;
+    private String senderName;
+    private String content;
+    private LocalDateTime createdAt;
 }
