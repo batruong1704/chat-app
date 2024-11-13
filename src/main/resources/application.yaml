@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: WhatsApp
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/WhatsApp
+    username: root
+    password: admin123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      ddl-auto: update
+
+
+server:
+  port: 80
