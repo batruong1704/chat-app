@@ -16,13 +16,13 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class CustomUserService implements UserDetailsService {
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserModel userModel = userRepository.findByEmail(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        UserModel userModel = userRepository.findByEmail(email);
         if (userModel == null) {
-            throw new UsernameNotFoundException("Không tìm thấy user: " + username);
+            throw new UsernameNotFoundException("Không tìm thấy user: " + email);
         }
 
         List<GrantedAuthority> authorityList = new ArrayList<>();

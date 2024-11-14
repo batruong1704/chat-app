@@ -25,8 +25,13 @@ public class AppConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+//                .authorizeHttpRequests(auth -> {
+//                    auth.requestMatchers("/api/**").authenticated()
+//                            .anyRequest().permitAll();
+//                })
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/api/**").authenticated()
+                    auth.requestMatchers("/api/auth/signup", "/api/auth/signin").permitAll()
+                            .requestMatchers("/api/**").authenticated()
                             .anyRequest().permitAll();
                 })
                 .addFilterBefore(new JwtTokenValidator(), BasicAuthenticationFilter.class)
@@ -42,7 +47,14 @@ public class AppConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+//        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedHeaders(List.of(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "Origin",
+                "X-Requested-With","Access-Control-Allow-Origin", "Header"
+        ));
         configuration.setAllowCredentials(true);
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setMaxAge(3600L);

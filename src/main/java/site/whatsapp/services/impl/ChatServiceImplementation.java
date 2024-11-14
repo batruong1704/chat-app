@@ -25,7 +25,7 @@ public class ChatServiceImplementation implements ChatService {
     @Override
     public ChatModel createChat(UserModel reqUser, UUID reqUser2) throws UserException {
         MDC.put("method", "createChat");
-        log.info("Tạo cuộc trò chuyện giữa người dùng {} và người dùng {}", reqUser.getId(), reqUser2);
+        log.info("[CHAT SERVER - createChat] Tạo cuộc trò chuyện giữa người dùng {} và người dùng {}", reqUser.getId(), reqUser2);
         UserModel userModel = userService.findUserById(reqUser2);
         ChatModel isChatExist = chatRepository.findSingleChatByUserIds(userModel, reqUser);
 
@@ -41,7 +41,7 @@ public class ChatServiceImplementation implements ChatService {
                 .build();
         log.info("Cuộc trò chuyện mới được tạo giữa người dùng {} và người dùng {}", reqUser.getId(), reqUser2);
         MDC.clear();
-        return newChat;
+        return chatRepository.save(newChat);
     }
 
     @Override
@@ -93,7 +93,7 @@ public class ChatServiceImplementation implements ChatService {
     @Override
     public ChatModel createGroup(GroupChatRequest groupChatRequest, UserModel reqUser) throws UserException {
         MDC.put("method", "createGroup");
-        log.info("Tạo nhóm trò chuyện với tên: {}", groupChatRequest.getChat_name());
+        log.info("[CHAT SERVER - createGroup] Tạo nhóm trò chuyện với tên: {}", groupChatRequest.getChat_name());
         Set<UserModel> userSet = new HashSet<>();
         for (UUID userId : groupChatRequest.getUserIds()) {
             UserModel userModel = userService.findUserById(userId);
@@ -108,15 +108,15 @@ public class ChatServiceImplementation implements ChatService {
                 .admins(Set.of(reqUser))
                 .users(userSet)
                 .build();
-        log.info("Nhóm trò chuyện được tạo với tên: {}", groupChatRequest.getChat_name());
+        log.info("[CHAT SERVER - createGroup] Nhóm trò chuyện được tạo với tên: {}", groupChatRequest.getChat_name());
         MDC.clear();
-        return group;
+        return chatRepository.save(group);
     }
 
     @Override
     public ChatModel addUserToGroup(UUID userId, UUID chatId, UserModel reqUser) throws UserException, ChatException {
         MDC.put("method", "addUserToGroup");
-        log.info("Thêm người dùng {} vào nhóm {}", userId, chatId);
+        log.info("[CHAT SERVER - addUserToGroup] Thêm người dùng {} vào nhóm {}", userId, chatId);
         Optional<ChatModel> chatOpt = chatRepository.findById(chatId);
         UserModel userModel = userService.findUserById(userId);
 
@@ -124,16 +124,16 @@ public class ChatServiceImplementation implements ChatService {
             ChatModel chat = chatOpt.get();
             if (chat.getAdmins().contains(reqUser)) {
                 chat.getUsers().add(userModel);
-                log.info("Người dùng {} đã được thêm vào nhóm {}", userId, chatId);
+                log.info("[CHAT SERVER - addUserToGroup] Người dùng {} đã được thêm vào nhóm {}", userId, chatId);
                 MDC.clear();
                 return chatRepository.save(chat);
             } else {
-                log.error("Người dùng {} không phải là quản trị viên của nhóm {}", reqUser.getId(), chatId);
+                log.error("[CHAT SERVER - addUserToGroup] Người dùng {} không phải là quản trị viên của nhóm {}", reqUser.getId(), chatId);
                 MDC.clear();
                 throw new UserException("[ChatServiceImpl] Bạn không phải là Admin");
             }
         }
-        log.error("Không tìm thấy nhóm với ID: {}", chatId);
+        log.error("[CHAT SERVER - addUserToGroup] Không tìm thấy nhóm với ID: {}", chatId);
         MDC.clear();
         throw new ChatException("[ChatServiceImpl] Không tìm thấy group với mã định danh: " + chatId);
     }

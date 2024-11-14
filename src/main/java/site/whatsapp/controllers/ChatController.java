@@ -21,8 +21,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/chat")
 public class ChatController {
-    private ChatService chatService;
-    private UserService userService;
+    private final ChatService chatService;
+    private final UserService userService;
 
     @PostMapping("/single")
     public ResponseEntity<ChatModel> createChatHandle(@RequestBody SingleChatRequest singleChatRequest, @RequestHeader("Authorization") String jwt

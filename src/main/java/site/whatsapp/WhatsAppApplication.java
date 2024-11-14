@@ -10,8 +10,8 @@ public class WhatsAppApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(WhatsAppApplication.class, args);
-        log.info("\n\n\t\t\tSTART!!!");
-        log.info("API test: http://localhost/swagger-ui/index.html");
+        log.info("\n\n\t\t\t\t\t\t\t\t\tSTART!!!");
+        log.info("API test: http://localhost:5000/swagger-ui/index.html");
     }
 
 }

@@ -14,14 +14,13 @@ public class TokenProvider {
     SecretKey key = Keys.hmacShaKeyFor(JwtConstant.SECRET_KEY.getBytes());
 
     public String generateToken(Authentication authentication) {
-        String jwt = Jwts.builder()
+        return Jwts.builder()
                 .setIssuer("whatsapp")
                 .setSubject(String.valueOf(new Date()))
                 .setExpiration(new Date(new Date().getTime() + 86400000))
                 .claim("email", authentication.getName())
-                .signWith(null)
+                .signWith(key)
                 .compact();
-        return jwt;
     }
 
     public String getEmailFormToken(String token) {

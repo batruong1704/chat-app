@@ -11,7 +11,11 @@ import java.util.UUID;
 
 public interface ChatRepository extends JpaRepository<ChatModel, UUID> {
 
-    @Query("SELECT c FROM ChatModel c JOIN c.users u WHERE u.id = :userId")
+    // Ver1
+//    @Query("SELECT c FROM ChatModel c JOIN c.users u WHERE u.id = :userId")
+//    public List<ChatModel> findChatByUserId(@Param("userId") UUID userId);
+
+    @Query("SELECT c FROM ChatModel c WHERE c.createdBy.id = :userId OR :userId IN (SELECT u.id FROM c.users u)")
     public List<ChatModel> findChatByUserId(@Param("userId") UUID userId);
 
     @Query("SELECT c FROM ChatModel c WHERE c.isGroup=false AND :user MEMBER of c.users AND :reqUser MEMBER of c.users")

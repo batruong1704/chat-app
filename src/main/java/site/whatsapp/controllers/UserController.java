@@ -16,20 +16,22 @@ import java.util.List;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
-    private UserService userService;
+    private final UserService userService;
 
+    @CrossOrigin
     @GetMapping("/profile")
     public ResponseEntity<UserModel> getUserProfileHandler(@RequestHeader("Authorization") String token) throws UserException {
         UserModel user = userService.findUserProfile(token);
         return new ResponseEntity<UserModel>(user, HttpStatus.ACCEPTED);
     }
 
-    @GetMapping("/query")
-    public ResponseEntity<List<UserModel>> searchUserHandler(@PathVariable("query") String query) {
-        List<UserModel> users = userService.searchUser(query);
+    @GetMapping("/search")
+    public ResponseEntity<List<UserModel>> searchUserHandler(@RequestParam("name") String name) {
+        List<UserModel> users = userService.searchUser(name);
         return new ResponseEntity<List<UserModel>>(users, HttpStatus.ACCEPTED);
     }
 
+    @PutMapping("/update")
     public ResponseEntity<ApiResponse> updateUserHandler(
             @RequestBody UpdateUserRequest req,
             @RequestHeader("Authorization") String token
@@ -40,6 +42,4 @@ public class UserController {
         ApiResponse updatedUser = new ApiResponse("Cập nhật thành công!", true);
         return new ResponseEntity<ApiResponse>(updatedUser, HttpStatus.ACCEPTED);
     }
-
-
 }

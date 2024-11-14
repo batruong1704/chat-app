@@ -11,5 +11,5 @@ public interface UserService {
     public UserModel findUserById(UUID id) throws UserException;
     public UserModel findUserProfile(String jwt) throws UserException;
     public UserModel updateUser(UUID id, UpdateUserRequest req) throws UserException;
-    public List<UserModel> searchUser(String query);
+    List<UserModel> searchUser(String query);
 }

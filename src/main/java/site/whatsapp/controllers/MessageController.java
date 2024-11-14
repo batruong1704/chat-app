@@ -44,7 +44,7 @@ public class MessageController {
     ) throws UserException, ChatException {
         UserModel userModel = userService.findUserProfile(token);
         List<MessageModel> messageModels = messageService.getChatsMessages(chatId, userModel);
-        return new ResponseEntity<>(messageModels, HttpStatus.OK);
+          return new ResponseEntity<>(messageModels, HttpStatus.OK);
     }
 
     @DeleteMapping("/{messageId}")

@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<UserModel, UUID> {
-    public UserModel findByEmail(String email);
+    UserModel findByEmail(String email);
 
-    @Query("SELECT u FROM UserModel u WHERE u.full_name LIKE %:query% OR u.email LIKE %:query%")
-    public List<UserModel> searchUser(@Param("query") String query);
+    @Query("SELECT u FROM UserModel u WHERE u.email LIKE %:name% OR u.full_name LIKE %:name%")
+    List<UserModel> searchUser(@Param("name") String name);
 }

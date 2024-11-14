@@ -1,6 +1,7 @@
 package site.whatsapp.services.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import site.whatsapp.configs.TokenProvider;
@@ -10,12 +11,14 @@ import site.whatsapp.repositorys.UserRepository;
 import site.whatsapp.request.UpdateUserRequest;
 import site.whatsapp.services.inter.UserService;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImplementation implements UserService {
     private final UserRepository userRepository;
     private final TokenProvider tokenProvider;
@@ -60,6 +63,19 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public List<UserModel> searchUser(String query) {
-        return List.of();
+        if (query == null || query.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String sanitizedQuery = query.trim()
+                .replace("%", "\\%")
+                .replace("_", "\\_");
+
+        log.info("Thực hiện tìm kiếm người dùng bằng truy vấn: {}", sanitizedQuery);
+
+        List<UserModel> results = userRepository.searchUser(sanitizedQuery);
+        log.info("Đã tìm thấy {} người dùng phù hợp với truy vấn: {}", results.size(), sanitizedQuery);
+
+        return results;
     }
 }

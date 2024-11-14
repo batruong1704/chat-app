@@ -1,8 +1,10 @@
 package site.whatsapp.response;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
-@AllArgsConstructor
+@AllArgsConstructor @Getter @Setter
 public class ApiResponse {
     private String message;
     private boolean status;
