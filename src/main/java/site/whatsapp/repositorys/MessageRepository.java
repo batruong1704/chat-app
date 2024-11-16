@@ -9,6 +9,10 @@ import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<MessageModel, UUID> {
 
-    @Query("SELECT m FROM MessageModel m JOIN m.chatModel c WHERE c.id = :chatId")
-    public List<MessageModel> findByChatId(UUID chatId);
+    @Query("SELECT m FROM MessageModel m JOIN m.chatModel c WHERE c.id = :chatId ORDER BY m.timestamp ASC")
+    List<MessageModel> findByChatId(UUID chatId);
+
+
+//    @Query("SELECT m FROM MessageModel m JOIN m.chatModel c WHERE c.id = :chatId")
+//    List<MessageModel> findByChatId(UUID chatId);
 }

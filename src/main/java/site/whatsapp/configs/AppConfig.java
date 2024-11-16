@@ -30,7 +30,7 @@ public class AppConfig {
 //                            .anyRequest().permitAll();
 //                })
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/api/auth/signup", "/api/auth/signin").permitAll()
+                    auth.requestMatchers("/api/auth/signup", "/api/auth/signin", "/ws/**").permitAll()
                             .requestMatchers("/api/**").authenticated()
                             .anyRequest().permitAll();
                 })
@@ -47,22 +47,19 @@ public class AppConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-//        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowedHeaders(List.of(
-                "Authorization",
-                "Content-Type",
-                "Accept",
-                "Origin",
-                "X-Requested-With","Access-Control-Allow-Origin", "Header"
+                "Authorization", "Content-Type", "Accept", "X-XSRF-TOKEN",
+                "Access-Control-Allow-Headers", "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"
         ));
         configuration.setAllowCredentials(true);
-        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setExposedHeaders(List.of("Authorization", "X-XSRF-TOKEN"));
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {

@@ -44,7 +44,7 @@ public class MessageController {
     ) throws UserException, ChatException {
         UserModel userModel = userService.findUserProfile(token);
         List<MessageModel> messageModels = messageService.getChatsMessages(chatId, userModel);
-          return new ResponseEntity<>(messageModels, HttpStatus.OK);
+        return new ResponseEntity<>(messageModels, HttpStatus.OK);
     }
 
     @DeleteMapping("/{messageId}")
@@ -56,5 +56,15 @@ public class MessageController {
         messageService.deleteMessage(messageId, userModel);
         ApiResponse res = new ApiResponse("Xóa tin nhắn thành công!", false);
         return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+
+    @GetMapping("/getChatRoom")
+    public ResponseEntity<String> getChatRoomId(
+            @RequestBody MessageModel message,
+            @RequestHeader("Authorization") String token
+    ) throws UserException, ChatException {
+        userService.findUserProfile(token);
+        String id = message.getChatModel().getId().toString();
+        return new ResponseEntity<>(id, HttpStatus.OK);
     }
 }

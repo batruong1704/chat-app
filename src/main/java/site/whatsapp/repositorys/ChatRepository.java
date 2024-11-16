@@ -16,8 +16,8 @@ public interface ChatRepository extends JpaRepository<ChatModel, UUID> {
 //    public List<ChatModel> findChatByUserId(@Param("userId") UUID userId);
 
     @Query("SELECT c FROM ChatModel c WHERE c.createdBy.id = :userId OR :userId IN (SELECT u.id FROM c.users u)")
-    public List<ChatModel> findChatByUserId(@Param("userId") UUID userId);
+    List<ChatModel> findChatByUserId(@Param("userId") UUID userId);
 
     @Query("SELECT c FROM ChatModel c WHERE c.isGroup=false AND :user MEMBER of c.users AND :reqUser MEMBER of c.users")
-    public ChatModel findSingleChatByUserIds(@Param("user")UserModel userModel, @Param("reqUser") UserModel reqUser);
+    ChatModel findSingleChatByUserIds(@Param("user")UserModel userModel, @Param("reqUser") UserModel reqUser);
 }
