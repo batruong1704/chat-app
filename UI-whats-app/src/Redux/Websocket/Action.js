@@ -1,7 +1,7 @@
 import Stomp from 'stompjs';
 import SockJS from 'sockjs-client';
 import * as types from "./ActionType";
-import {SYNC_WEBSOCKET_MESSAGE} from "./ActionType";
+import {SYNC_WEBSOCKET_MESSAGE, WEBSOCKET_TYPING_STATUS} from "./ActionType";
 
 import { CREATE_NEW_MESAGE } from "../Message/ActionType";
 
@@ -71,7 +71,6 @@ export const subscribeToChat = (chatId) => (dispatch, getState) => {
             console.log('[WebSocket Debug] Nhận message mới:', message);
             const receivedMessage = JSON.parse(message.body);
 
-            // Thêm id nếu không tồn tại
             if (!receivedMessage.id) {
                 receivedMessage.id = Date.now().toString();
             }
@@ -89,7 +88,6 @@ export const subscribeToChat = (chatId) => (dispatch, getState) => {
                 payload: receivedMessage
             });
 
-            // Dispatch để cập nhật message mới
             dispatch({
                 type: CREATE_NEW_MESAGE,
                 payload: receivedMessage
@@ -104,6 +102,22 @@ export const subscribeToChat = (chatId) => (dispatch, getState) => {
         `/topic/room/${chatId}`,
         messageListener,
         { id: subscriptionId }
+    );
+
+    stompClient.subscribe(
+        `/topic/typing/${chatId}`,
+        (message) => {
+            const typingStatus = JSON.parse(message.body);
+            console.log('[WebSocket Debug] Nhận trạng thái typing:', typingStatus);
+            dispatch({
+                type: WEBSOCKET_TYPING_STATUS,
+                payload: {
+                    chatId,
+                    userId: typingStatus.userId,
+                    booleanTyping: typingStatus.booleanTyping
+                }
+            });
+        }
     );
 };
 
@@ -138,6 +152,20 @@ export const sendMessage = (message) => (dispatch) => {
     }
 };
 
+export const sendTypingStatus = (chatId, userId, booleanTyping) => (dispatch) => {
+    if (!stompClient || !stompClient.connected) {
+        console.error('[SendTypingStatus] WebSocket chưa kết nối!');
+        return;
+    }
+
+    console.log('[SendTypingStatus] Gửi trạng thái typing:', chatId, userId, booleanTyping);
+
+    stompClient.send("/app/typing", {}, JSON.stringify({
+        chatId,
+        userId,
+        booleanTyping
+    }));
+};
 
 export const disconnectWebSocket = () => (dispatch) => {
     if (stompClient?.connected) {

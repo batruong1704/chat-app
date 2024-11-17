@@ -5,6 +5,7 @@ const initialState = {
     connecting: false,
     error: null,
     messages: {},
+    typingStatus: null
 };
 
 export const websocketReducer = (state = initialState, action) => {
@@ -34,6 +35,8 @@ export const websocketReducer = (state = initialState, action) => {
                 error: action.payload,
                 connecting: false
             };
+
+
         case types.WEBSOCKET_MESSAGE_RECEIVED:
             const { chatId, message } = action.payload;
             return {
@@ -45,6 +48,17 @@ export const websocketReducer = (state = initialState, action) => {
                         : [message]
                 }
             };
+
+        case types.WEBSOCKET_TYPING_STATUS:
+            return {
+                ...state,
+                typingStatus: {
+                    chatId: action.payload.chatId,
+                    userId: action.payload.userId,
+                    booleanTyping: action.payload.booleanTyping
+                }
+            };
+
         default:
             return state;
     }

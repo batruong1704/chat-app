@@ -285,6 +285,7 @@ export const HomePage = () => {
                             messages={messages}
                             authUserId={auth.reqData?.id}
                             messagesEndRef={messagesEndRef}
+                            currentChat={currentChat}
                         />
 
                         {/* Chat Input */}
@@ -293,6 +294,7 @@ export const HomePage = () => {
                                 content={content}
                                 setContent={setContent}
                                 onSendMessage={handleCreateNewMessage}
+                                currentChat={currentChat}
                             />
                         </div>
                     </motion.div>

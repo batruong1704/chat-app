@@ -23,8 +23,7 @@ const WelcomeScreen = () => {
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.2 }}
-                    className="space-y-4"
-                >
+                    className="space-y-4">
                     <h1 className="text-3xl md:text-5xl text-gray-800 font-bold tracking-tight">
                         Chat App
                     </h1>
