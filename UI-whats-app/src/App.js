@@ -3,8 +3,9 @@ import { Routes, Route } from 'react-router-dom';
 import { HomePage } from './Components/HomePage';
 import Status from "./Components/Status/Status";
 import StatusView from './Components/Status/StatusView';
-import Signin from "./Components/Register/Signin";
-import Signup from "./Components/Register/Signup";
+import SignIn from "./Components/Register/SignIn";
+import SignUp from "./Components/Register/SignUp";
+import AuthForm from "./Components/Register/AuthForm";
 
 function App() {
     return (
@@ -12,8 +13,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/status" element={<Status />} />
             <Route path="/status/:userId" element={<StatusView />} />
-            <Route path="/signin" element={<Signin />} />
-            <Route path="/signup" element={<Signup />} />
+            <Route path="/authform" element={<AuthForm />} />
         </Routes>
     );
 }

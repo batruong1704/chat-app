@@ -3,8 +3,8 @@ import { BsArrowLeft, BsArrowRight } from 'react-icons/bs';
 import SelectedMember from './SelectedMember';
 import { ChatCard } from '../ChatCard/ChatCard';
 import NewGroup from './NewGroup';
-import {useDispatch, useSelector} from "react-redux";
-import {searchUser} from "../../Redux/Auth/Action";
+import { useDispatch, useSelector } from "react-redux";
+import { searchUser } from "../../Redux/Auth/Action";
 
 const CreateGroup = ({ setIsGroup }) => {
   const [newGroup, setNewGroup] = useState(false);
@@ -23,9 +23,9 @@ const CreateGroup = ({ setIsGroup }) => {
     setIsGroup(false);
   };
 
-  const handleSearch=(key)=> {
-    if (key.trim()) {  // Chỉ tìm kiếm nếu có thông tin đầu vào thực tế
-      dispatch(searchUser({key, token}));
+  const handleSearch = (key) => {
+    if (key.trim()) {
+      dispatch(searchUser({ key, token }));
     }
   }
 
@@ -41,60 +41,71 @@ const CreateGroup = ({ setIsGroup }) => {
                 <p className='text-xl font-semibold'>Tạo nhóm</p>
               </div>
 
-              {/* Rest of the component remains the same */}
-              <div className='relative bg-white py-4 px-3'>
-                <div className='flex space-x-2 flex-wrap space-y-1'>
-                  {groupMember.size > 0 &&
-                      Array.from(groupMember).map((item, index) => (
-                          <SelectedMember
-                              key={index}
-                              handleRemoveMember={() => handleRemoveMember(item)}
-                              member={item}
-                          />
-                      ))}
-                </div>
+          {/* Search and Selected Members */}
+          <div className="bg-white shadow-sm">
+            <div className="max-w-6xl mx-auto px-6 py-4">
+              <div className="flex flex-wrap gap-2 mb-3">
+                {groupMember.size > 0 &&
+                  Array.from(groupMember).map((item, index) => (
+                    <SelectedMember
+                      key={index}
+                      handleRemoveMember={() => handleRemoveMember(item)}
+                      member={item}
+                    />
+                  ))}
+              </div>
+              <div className="relative">
                 <input
-                    type='text'
-                    onChange={(e) => {
-                      setQuery(e.target.value);
-                      if (e.target.value.trim()) {
-                        handleSearch(e.target.value);
-                      }
-                    }}
-                    className='outline-none border-b border-[#8888] p-2 w-[93%]'
-                    placeholder='Tìm kiếm bạn bè'
-                    value={query}
+                  type="text"
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    if (e.target.value.trim()) {
+                      handleSearch(e.target.value);
+                    }
+                  }}
+                  className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                  placeholder="Tìm kiếm bạn bè"
+                  value={query}
                 />
               </div>
-
-              <div className='bg-white overflow-y-scroll h-[50.2vh]'>
-                {query &&
-                    auth.searchUser?.map((item, index) => (
-                        <div
-                            onClick={() => {
-                              const updatedMembers = new Set(groupMember);
-                              updatedMembers.add(item);
-                              setGroupMember(updatedMembers);
-                              setQuery('');
-                            }}
-                            key={index}
-                        >
-                          <hr />
-                          <ChatCard userImg={item.profile_picture} name={item.full_name} />
-                        </div>
-                    ))}
-              </div>
-
-              <div className='bottom-10 py-10 bg-slate-200 flex items-center justify-center'>
-                <div className='bg-green-600 rounded-full p-4 cursor-pointer'
-                    onClick={() => setNewGroup(true)}>
-                  <BsArrowRight className='text-white font-bold text-3xl' />
-                </div>
-              </div>
             </div>
-        )}
-        {newGroup && <NewGroup setIsGroup={setIsGroup} groupMember = {groupMember}/>}
-      </div>
+          </div>
+
+          {/* Search Results */}
+          <div className="flex-1 overflow-auto">
+            <div className="max-w-6xl mx-auto px-6">
+              {query && auth.searchUser?.map((item, index) => (
+                <div
+                  key={index}
+                  onClick={() => {
+                    const updatedMembers = new Set(groupMember);
+                    updatedMembers.add(item);
+                    setGroupMember(updatedMembers);
+                    setQuery('');
+                  }}
+                  className="hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <ChatCard userImg={item.profile_picture} name={item.full_name} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Next Button */}
+          <div className="bg-white border-t border-gray-200 p-4">
+            <div className="max-w-6xl mx-auto flex justify-center">
+              <button
+                onClick={() => setNewGroup(true)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-full shadow-lg transition-colors transform hover:scale-105"
+              >
+                <BsArrowRight className="text-2xl" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {newGroup && <NewGroup setIsGroup={setIsGroup} groupMember={groupMember} />}
+    </div>
   );
 };
 

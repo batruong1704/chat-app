@@ -33,12 +33,6 @@ public class MessageServiceImplementation implements MessageService {
     public MessageModel sendMessage(SendMessageRequest request) throws UserException, ChatException {
         UserModel userModel = userService.findUserById(request.getUserId());
         ChatModel chatModel = chatService.findChatById(request.getChatId());
-//        MessageModel messageModel = MessageModel.builder()
-//                .chatModel(chatModel)
-//                .userModel(userModel)
-//                .content(request.getContent())
-//                .timestamp(LocalDateTime.now())
-//                .build();
         return messageRepository.save(MessageModel.builder()
                 .chatModel(chatModel)
                 .userModel(userModel)
