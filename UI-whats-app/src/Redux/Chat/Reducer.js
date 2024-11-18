@@ -1,4 +1,4 @@
-import {CREATE_CHAT, CREATE_GROUP, GET_USER_CHAT} from "./ActionType";
+import {ADD_NEW_CHAT, CREATE_CHAT, CREATE_GROUP, GET_ROOM_CHAT} from "./ActionType";
 
 const initialState = {
     chats: [],
@@ -19,12 +19,21 @@ export const chatReducer = (store = initialState, {type, payload}) => {
             ...store,
             createdGroup: payload
         }
-    } else if (type === GET_USER_CHAT) {
+    } else if (type === GET_ROOM_CHAT) {
         // console.log("[CHAT REDUCER - GET USER CHAT] ", payload);
         return {
             ...store,
             chats: payload
         }
+    } else if (type === ADD_NEW_CHAT) {
+        const chatExists = store.chats.some(chat => chat.id === payload.id);
+        if (chatExists) {
+            return store;
+        }
+        return {
+            ...store,
+            chats: [payload, ...store.chats]
+        };
     }
 
     return store;

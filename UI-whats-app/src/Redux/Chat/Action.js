@@ -1,5 +1,5 @@
 import {BASE_API_URL} from "../../Config/Api";
-import {CREATE_CHAT, CREATE_GROUP, GET_USER_CHAT} from "./ActionType";
+import {CREATE_CHAT, CREATE_GROUP, GET_ROOM_CHAT} from "./ActionType";
 
 export const createChat = (chatData) => async(dispatch) => {
     try {
@@ -26,6 +26,9 @@ export const createChat = (chatData) => async(dispatch) => {
             type: CREATE_CHAT,
             payload: reqData
         });
+
+        return reqData;
+
     } catch (error) {
         console.error("[ACTION CREATE CHAT] ", error);
     }
@@ -42,11 +45,12 @@ export const createGroupChat = (chatData) => async(dispatch) => {
             body: JSON.stringify(chatData.group)
         })
         const reqData = await res.json();
-        // console.log("[ACTION CREATE GROUP CHAT]: ", reqData);
+        console.log("[ACTION CREATE GROUP CHAT]: ", reqData);
         dispatch({
             type: CREATE_GROUP,
             payload: reqData
         })
+        return reqData;
     } catch (error) {
         console.log("[ACTION CREATE GROUP CHAT]: ", error);
     }
@@ -63,9 +67,9 @@ export const getUserChat = (chatData) => async(dispatch) => {
             }
         })
         const reqData = await res.json();
-        // console.log("[ACTION GET USER CHAT]: ", reqData);
+        console.log("[ACTION GET USER CHAT]: ", reqData);
         dispatch({
-            type: GET_USER_CHAT,
+            type: GET_ROOM_CHAT,
             payload: reqData
         })
     } catch (error) {

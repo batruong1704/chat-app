@@ -7,7 +7,7 @@ const SelectedMember = ({ handleRemoveMember, member }) => {
             <div className="flex items-center gap-2">
                 <img
                     className="w-6 h-6 rounded-full object-cover ring-2 ring-emerald-100"
-                    src={member.profile_picture || "https://th.bing.com/th/id/OIP.voESzauC2ut4xs_cIFUGfQAAAA?w=474&h=474&rs=1&pid=ImgDetMain"}
+                    src={member.profile_picture || "https://cdn0.iconfinder.com/data/icons/seo-web-4-1/128/Vigor_User-Avatar-Profile-Photo-01-256.png"}
                     alt={`${member.full_name}'s avatar`}
                 />
                 <span className="text-sm font-medium text-gray-700">{member.full_name}</span>

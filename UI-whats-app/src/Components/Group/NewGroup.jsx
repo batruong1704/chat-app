@@ -1,9 +1,12 @@
 import React, { useState } from 'react'
 import { BsArrowLeft, BsCheck2 } from "react-icons/bs";
-import { Avatar, Button, CircularProgress } from "@mui/material";
+import { Avatar, CircularProgress } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { currentUser } from "../../Redux/Auth/Action";
-import { createGroupChat } from "../../Redux/Chat/Action";
+import {createChat, createGroupChat} from "../../Redux/Chat/Action";
+import {sendNotificationCreateRoom} from "../../Redux/Websocket/Action";
+import { motion } from 'framer-motion';
+
 
 const NewGroup = ({ groupMember, setIsGroup }) => {
   const [isImageUploading, setIsImageUploading] = useState(false);
@@ -11,6 +14,7 @@ const NewGroup = ({ groupMember, setIsGroup }) => {
   const [groupImage, setGroupImage] = useState(null);
   const token = localStorage.getItem('token');
   const dispatch = useDispatch();
+  const { auth } = useSelector((state) => state);
 
   const updateToCloudnary = async (pics) => {
     if (!pics) return;
@@ -42,7 +46,8 @@ const NewGroup = ({ groupMember, setIsGroup }) => {
   }
 
   const handleCreateGroup = async () => {
-    let userIds = [];
+    const creatorId = auth.reqData.id;
+    let userIds = [creatorId];
     for (let user of groupMember) {
       userIds.push(user.id);
     }
@@ -54,7 +59,25 @@ const NewGroup = ({ groupMember, setIsGroup }) => {
     };
 
     const data = { group, token };
-    await dispatch(createGroupChat(data));
+    let newChat;
+
+    if (userIds.length === 2) {
+      const chatData = {
+        data: { userId: userIds[1] },
+        token
+      };
+      newChat = await dispatch(createChat(chatData));
+    } else {
+      newChat = await dispatch(createGroupChat(data));
+    }
+
+    if (newChat) {
+      dispatch(sendNotificationCreateRoom(newChat));
+      console.log("[NewGroup] Sent notification for new group:", newChat);
+    } else {
+      console.error("[NewGroup] Failed to create group");
+    }
+
     setIsGroup(false);
   };
 
@@ -89,7 +112,7 @@ const NewGroup = ({ groupMember, setIsGroup }) => {
                   boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                 }}
                 alt="Group Icon"
-                src={groupImage || "https://th.bing.com/th/id/OIP.voESzauC2ut4xs_cIFUGfQAAAA?w=474&h=474&rs=1&pid=ImgDetMain"}
+                src={groupImage || "https://cdn2.iconfinder.com/data/icons/unigrid-phantom-multimedia-vol-1/60/020_046_add_image_painting_photo_picture_gallery_album-128.png"}
               />
               {isImageUploading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-full">
@@ -124,16 +147,19 @@ const NewGroup = ({ groupMember, setIsGroup }) => {
 
       {/* Create Button */}
       {groupName && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
-          <div className="max-w-6xl mx-auto flex justify-center">
-            <Button
-              onClick={handleCreateGroup}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-full shadow-lg transition-all transform hover:scale-105"
-            >
-              <BsCheck2 className="text-3xl" />
-            </Button>
-          </div>
-        </div>
+        <motion.button
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleCreateGroup}
+          className="fixed bottom-8 right-8 bg-emerald-600 hover:bg-emerald-700 text-white
+            p-4 rounded-full shadow-2xl transition-all transform
+            flex items-center justify-center z-50
+            hover:shadow-emerald-500/50"
+        >
+          <BsCheck2 className="text-3xl" />
+        </motion.button>
       )}
     </div>
   );

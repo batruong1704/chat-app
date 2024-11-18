@@ -1,18 +1,24 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { connectWebSocket, disconnectWebSocket, subscribeToChat, sendMessage } from '../Redux/Websocket/Action';
+import {
+    connectWebSocket,
+    disconnectWebSocket,
+    subscribeToChat,
+    sendMessage,
+    sendNotificationCreateRoom
+} from '../Redux/Websocket/Action';
 import { currentUser, logoutAction, searchUser } from "../Redux/Auth/Action";
 import { createChat, getUserChat } from "../Redux/Chat/Action";
-import { createMessage, getAllMessage } from "../Redux/Message/Action";
+import { getAllMessage } from "../Redux/Message/Action";
 
 // Import components
-import SidebarHeader from './Sidebar/SidebarHeader';
-import SearchBar from './Sidebar/SearchBar';
-import ChatHeader from './Content/ChatHeader';
-import ChatInput from './Content/ChatInput';
-import MessageList from './Content/MessageList';
-import WelcomeScreen from './Content/WelcomeScreen';
+import SidebarHeader from './Menu/Sidebar/SidebarHeader';
+import SearchBar from './Menu/SearchBar';
+import ChatHeader from './ChatBox/ChatHeader';
+import ChatInput from './ChatBox/ChatInput';
+import MessageList from './ChatBox/MessageList';
+import WelcomeScreen from './ChatBox/WelcomeScreen';
 import CreateGroup from "./Group/CreateGroup";
 import Profile from "./Profile/Profile";
 import { ChatCard } from "./ChatCard/ChatCard";
@@ -45,7 +51,15 @@ export const HomePage = () => {
 
     const handleClick = (event) => setAnchorEl(event.currentTarget);
     const handleClose = () => setAnchorEl(null);
-    const handleClickOnChatCard = (userId) => dispatch(createChat({ data: { userId }, token }));
+    const handleClickOnChatCard = async (userId) => {
+        const newChat = await dispatch(createChat({ data: { userId }, token }));
+        if (newChat) {
+            dispatch(sendNotificationCreateRoom(newChat));
+            console.log("[handleClickOnChatCard] Sent notification for new chat:", newChat);
+        } else {
+            console.error("[handleClickOnChatCard] Failed to create chat");
+        }
+    };
     const handleNavigate = () => setIsProfile(true);
     const handleCloseOpenProfile = () => setIsProfile(false);
     const handleCreateGroup = () => setIsGroup(true);
@@ -99,7 +113,7 @@ export const HomePage = () => {
     useEffect(() => {
         if (currentChat?.id) {
             const wsMessagesForChat = websocketMessages[currentChat.id] || [];
-            const apiMessages = message.messages || [];
+            const apiMessages = Array.isArray(message.messages) ? message.messages : [];
             const messageIds = new Set();
             const allMessages = [...apiMessages];
 
@@ -119,7 +133,7 @@ export const HomePage = () => {
 
     useEffect(() => {
         if (token && !connected) {
-            dispatch(connectWebSocket(token));
+            dispatch(connectWebSocket(token, auth.reqData?.id));
         }
         return () => {
             if (connected) {
@@ -130,12 +144,17 @@ export const HomePage = () => {
 
     useEffect(() => {
         let subscription;
-        if (connected && currentChat?.id) {
-            subscription = dispatch(subscribeToChat(currentChat.id));
-            dispatch(getAllMessage({ token, chatId: currentChat.id }));
-        }
+        const setupSubscription = async () => {
+            if (connected && currentChat?.id) {
+                subscription = await dispatch(subscribeToChat(currentChat.id));
+                dispatch(getAllMessage({ token, chatId: currentChat.id }));
+            }
+        };
+
+        setupSubscription();
+
         return () => {
-            if (subscription) {
+            if (subscription && subscription.unsubscribe) {
                 subscription.unsubscribe();
             }
         };
@@ -227,7 +246,16 @@ export const HomePage = () => {
                                         >
                                             <ChatCard
                                                 name={item.full_name}
-                                                userImg={item.profile_picture || "/api/placeholder/40/40"}
+                                                userImg={item.profile_picture || "https://favpng.com/png_view/user-profile-icon-design-png/d7Kr4Rdm"}
+                                                lastMessage={item.lastMessage?.content}
+                                                timestamp={item.lastMessage?.timestamp}
+                                                unreadCount={item.unreadCount}
+                                                isOnline={item.isOnline}
+                                                isTyping={item.isTyping}
+                                                messageStatus={item.lastMessage?.status}
+                                                group = {item.group}
+                                                members={item.users}
+                                                isNewRoom={item.id === chat.chatId}
                                             />
                                         </motion.div>
                                     ))}
@@ -242,7 +270,15 @@ export const HomePage = () => {
                                             {item.group ? (
                                                 <ChatCard
                                                     name={item.chat_name}
-                                                    userImg={item.chat_image || "/api/placeholder/40/40"}
+                                                    userImg={item.chat_image || "https://favpng.com/png_view/user-profile-icon-design-png/d7Kr4Rdm"}
+                                                    lastMessage={item.lastMessage?.content}
+                                                    timestamp={item.lastMessage?.timestamp}
+                                                    unreadCount={item.unreadCount}
+                                                    isOnline={item.isOnline}
+                                                    isTyping={item.isTyping}
+                                                    messageStatus={item.lastMessage?.status}
+                                                    group = {item.group}
+                                                    members={item.users}
                                                 />
                                             ) : (
                                                 <ChatCard

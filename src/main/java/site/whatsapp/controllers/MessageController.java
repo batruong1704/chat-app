@@ -37,6 +37,14 @@ public class MessageController {
         return new ResponseEntity<MessageModel>(messageModel, HttpStatus.OK);
     }
 
+    /**
+     * Lấy danh sách tin nhắn trong phòng chat
+     * @param chatId
+     * @param token
+     * @return
+     * @throws UserException
+     * @throws ChatException
+     */
     @GetMapping("/chat/{chatId}")
     public ResponseEntity<List<MessageModel>> getChatsMessageHandle(
             @PathVariable UUID chatId,

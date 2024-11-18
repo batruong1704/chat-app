@@ -12,7 +12,19 @@ spring:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
       ddl-auto: update
-
-
+  cache:
+    type: redis
+    redis:
+      host: localhost
+      port: 6379
 server:
   port: 5000
+
+cache:
+  redis:
+    chat_messages: "chat_messages:"
+    user_chats: "user_chats"
+    message_ttl: 3600
+    chat_ttl: 3600
+    message_details: "message_details:"
+    chat_details: "chat_details:"

@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public interface MessageService {
     MessageModel sendMessage(SendMessageRequest sendMessageRequest) throws UserException, ChatException;
-    List<MessageModel> getChatsMessages(UUID chatId, UserModel reqUser) throws ChatException, UserException;
+    List<MessageModel> getChatsMessages(UUID chatId, UserModel reqUser) throws UserException, ChatException;
     MessageModel findMessageById(UUID messageId) throws MessageException;
     void deleteMessage(UUID messageId, UserModel reqUser) throws MessageException;
 }

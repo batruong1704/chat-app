@@ -1,36 +1,45 @@
 import Stomp from 'stompjs';
 import SockJS from 'sockjs-client';
 import * as types from "./ActionType";
-import {SYNC_WEBSOCKET_MESSAGE, WEBSOCKET_TYPING_STATUS} from "./ActionType";
+import {WEBSOCKET_TYPING_STATUS} from "./ActionType";
 
-import { CREATE_NEW_MESAGE } from "../Message/ActionType";
+import {ADD_NEW_CHAT} from "../Chat/ActionType";
 
 let stompClient = null;
 
-export const connectWebSocket = (token) => async (dispatch) => {
+export const connectWebSocket = (token, userId) => async (dispatch) => {
     if (stompClient && stompClient.connected) {
-        console.log("WebSocket đã kết nối, bỏ qua");
-        return;
+        return Promise.resolve();
     }
-    try {
-        dispatch({ type: types.WEBSOCKET_CONNECT });
 
-        const socket = new SockJS('http://localhost:5000/ws');
-        stompClient = Stomp.over(socket);
+    return new Promise((resolve, reject) => {
+        try {
+            const socket = new SockJS('http://localhost:5000/ws');
+            stompClient = Stomp.over(socket);
 
-        // Disable debug logs in production
-        if (process.env.NODE_ENV === 'production') {
-            stompClient.debug = null;
-        }
+            const connectionTimeout = setTimeout(() => {
+                reject(new Error('WebSocket connection timeout'));
+            }, 10000);
 
-        await new Promise((resolve, reject) => {
             stompClient.connect(
-                { Authorization: `Bearer ${token}` },
+                {Authorization: `Bearer ${token}`},
                 () => {
-                    dispatch({ type: types.WEBSOCKET_CONNECTED });
-                    resolve();
+                    clearTimeout(connectionTimeout);
+                    dispatch({type: types.WEBSOCKET_CONNECTED});
+
+                    setTimeout(() => {
+                        stompClient.subscribe(`/topic/notification/${userId}`, (message) => {
+                            const newChat = JSON.parse(message.body);
+                            dispatch({
+                                type: ADD_NEW_CHAT,
+                                payload: newChat
+                            });
+                        });
+                        resolve();
+                    }, 500);
                 },
                 (error) => {
+                    clearTimeout(connectionTimeout);
                     dispatch({
                         type: types.WEBSOCKET_ERROR,
                         payload: error.message
@@ -38,87 +47,102 @@ export const connectWebSocket = (token) => async (dispatch) => {
                     reject(error);
                 }
             );
+        } catch (error) {
+            dispatch({
+                type: types.WEBSOCKET_ERROR,
+                payload: error.message
+            });
+            reject(error);
+        }
+    });
+};
+
+export const subscribeToChat = (chatId) => async (dispatch, getState) => {
+    try {
+        await new Promise(resolve => {
+            const checkConnection = () => {
+                if (stompClient && stompClient.connected) {
+                    resolve();
+                } else {
+                    setTimeout(checkConnection, 100);
+                }
+            };
+            checkConnection();
         });
 
+        if (!stompClient || !stompClient.connected) {
+            throw new Error('WebSocket connection failed');
+        }
+
+        // Proceed with subscription logic
+        const subscriptionId = `sub-${chatId}`;
+
+        const existingSubscription = stompClient.subscriptions[subscriptionId];
+        if (existingSubscription) {
+            console.log(`Already subscribed to chat ${chatId}`);
+            return { unsubscribe: () => existingSubscription.unsubscribe() };
+        }
+
+        const messageListener = (message) => {
+            try {
+                console.log('[WebSocket Debug] Received new message:', message);
+                const receivedMessage = JSON.parse(message.body);
+
+                if (!receivedMessage.id) {
+                    receivedMessage.id = Date.now().toString();
+                }
+
+                dispatch({
+                    type: types.WEBSOCKET_MESSAGE_RECEIVED,
+                    payload: {
+                        chatId,
+                        message: receivedMessage
+                    }
+                });
+
+            } catch (error) {
+                console.error('[WebSocket Debug] Error processing message:', error);
+            }
+        };
+
+        const messageSubscription = stompClient.subscribe(
+            `/topic/room/${chatId}`,
+            messageListener,
+            { id: subscriptionId }
+        );
+
+        const typingSubscription = stompClient.subscribe(
+            `/topic/room/${chatId}/typing`,
+            (message) => {
+                const typingStatus = JSON.parse(message.body);
+                console.log('[WebSocket Debug] Received typing status:', typingStatus);
+                dispatch({
+                    type: WEBSOCKET_TYPING_STATUS,
+                    payload: {
+                        chatId,
+                        userId: typingStatus.userId,
+                        booleanTyping: typingStatus.booleanTyping
+                    }
+                });
+            }
+        );
+
+        // Return an object with an unsubscribe method
+        return {
+            unsubscribe: () => {
+                messageSubscription.unsubscribe();
+                typingSubscription.unsubscribe();
+            }
+        };
+
     } catch (error) {
+        console.error('Failed to subscribe to chat:', error);
         dispatch({
             type: types.WEBSOCKET_ERROR,
             payload: error.message
         });
+        return { unsubscribe: () => {} }; // Return a no-op unsubscribe method
     }
-};
-
-export const subscribeToChat = (chatId) => (dispatch, getState) => {
-    if (!stompClient || !stompClient.connected) {
-        console.warn("WebSocket chưa kết nối, không thể subscribe");
-        dispatch({
-            type: types.WEBSOCKET_ERROR,
-            payload: 'WebSocket not connected'
-        });
-        return;
-    }
-
-    const subscriptionId = `sub-${chatId}`;
-
-    const existingSubscription = stompClient.subscriptions[subscriptionId];
-    if (existingSubscription) {
-        console.log(`Đã subscribe vào phòng ${chatId}`);
-        return;
-    }
-
-    const messageListener = (message) => {
-        try {
-            console.log('[WebSocket Debug] Nhận message mới:', message);
-            const receivedMessage = JSON.parse(message.body);
-
-            if (!receivedMessage.id) {
-                receivedMessage.id = Date.now().toString();
-            }
-
-            dispatch({
-                type: types.WEBSOCKET_MESSAGE_RECEIVED,
-                payload: {
-                    chatId,
-                    message: receivedMessage
-                }
-            });
-
-            dispatch({
-                type: SYNC_WEBSOCKET_MESSAGE,
-                payload: receivedMessage
-            });
-
-            dispatch({
-                type: CREATE_NEW_MESAGE,
-                payload: receivedMessage
-            });
-
-        } catch (error) {
-            console.error('[WebSocket Debug] Lỗi xử lý message:', error);
-        }
-    };
-
-    stompClient.subscribe(
-        `/topic/room/${chatId}`,
-        messageListener,
-        { id: subscriptionId }
-    );
-
-    stompClient.subscribe(
-        `/topic/typing/${chatId}`,
-        (message) => {
-            const typingStatus = JSON.parse(message.body);
-            console.log('[WebSocket Debug] Nhận trạng thái typing:', typingStatus);
-            dispatch({
-                type: WEBSOCKET_TYPING_STATUS,
-                payload: {
-                    chatId,
-                    userId: typingStatus.userId,
-                    booleanTyping: typingStatus.booleanTyping
-                }
-            });
-        }
-    );
 };
 
 export const sendMessage = (message) => (dispatch) => {
@@ -167,10 +191,21 @@ export const sendTypingStatus = (chatId, userId, booleanTyping) => (dispatch) =>
     }));
 };
 
+export const sendNotificationCreateRoom = (chatModel) => (dispatch) => {
+    if (!stompClient || !stompClient.connected) {
+        console.error('[SendNotification] WebSocket chưa kết nối!');
+        return;
+    }
+
+    console.log('[SendNotification] Gửi thông báo tạo room:', chatModel);
+
+    stompClient.send("/app/notification", {}, JSON.stringify(chatModel));
+};
+
 export const disconnectWebSocket = () => (dispatch) => {
     if (stompClient?.connected) {
         stompClient.disconnect(() => {
-            dispatch({ type: types.WEBSOCKET_DISCONNECT });
+            dispatch({type: types.WEBSOCKET_DISCONNECT});
         });
     }
 };

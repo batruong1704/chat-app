@@ -39,13 +39,19 @@ export const websocketReducer = (state = initialState, action) => {
 
         case types.WEBSOCKET_MESSAGE_RECEIVED:
             const { chatId, message } = action.payload;
+            // Check if message already exists to prevent duplicates
+            const existingMessages = state.messages[chatId] || [];
+            const isDuplicate = existingMessages.some(msg => msg.id === message.id);
+
+            if (isDuplicate) {
+                return state;
+            }
+
             return {
                 ...state,
                 messages: {
                     ...state.messages,
-                    [chatId]: Array.isArray(state.messages[chatId])
-                        ? [...state.messages[chatId], message]
-                        : [message]
+                    [chatId]: [...existingMessages, message]
                 }
             };
 
@@ -57,6 +63,12 @@ export const websocketReducer = (state = initialState, action) => {
                     userId: action.payload.userId,
                     booleanTyping: action.payload.booleanTyping
                 }
+            };
+
+        case types.WEBSOCKET_NEW_ROOM_NOTIFICATION:
+            return {
+                ...state,
+                notifications: [...state.notifications, action.payload]
             };
 
         default:

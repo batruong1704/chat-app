@@ -14,9 +14,13 @@ const CreateGroup = ({ setIsGroup }) => {
   const { auth } = useSelector((state) => state);
   const dispatch = useDispatch();
 
-  const handleRemoveMember = (member) => {
-    groupMember.delete(member);
-    setGroupMember(groupMember);
+  const handleRemoveMember = (memberId) => {
+    const updatedMembers = new Set(groupMember);
+    const memberToRemove = Array.from(updatedMembers).find(m => m.id === memberId);
+    if (memberToRemove) {
+      updatedMembers.delete(memberToRemove);
+      setGroupMember(updatedMembers);
+    }
   };
 
   const handleNavigate = () => {
@@ -30,26 +34,26 @@ const CreateGroup = ({ setIsGroup }) => {
   }
 
   return (
-      <div className='w-full h-full'>
-        {!newGroup && (
-            <div>
-              <div className='flex items-center space-x-10 bg-[#008069] text-white pt-16 px-10 pb-5'>
-                <BsArrowLeft
-                    className='cursor-pointer text-2xl font-bold'
-                    onClick={handleNavigate}
-                />
-                <p className='text-xl font-semibold'>Tạo nhóm</p>
-              </div>
+    <div className='w-full h-full'>
+      {!newGroup && (
+        <div>
+          <div className='flex items-center space-x-10 bg-[#008069] text-white pt-16 px-10 pb-5'>
+            <BsArrowLeft
+              className='cursor-pointer text-2xl font-bold'
+              onClick={handleNavigate}
+            />
+            <p className='text-xl font-semibold'>Tạo nhóm</p>
+          </div>
 
           {/* Search and Selected Members */}
           <div className="bg-white shadow-sm">
             <div className="max-w-6xl mx-auto px-6 py-4">
               <div className="flex flex-wrap gap-2 mb-3">
                 {groupMember.size > 0 &&
-                  Array.from(groupMember).map((item, index) => (
+                  Array.from(groupMember).map((item) => (
                     <SelectedMember
-                      key={index}
-                      handleRemoveMember={() => handleRemoveMember(item)}
+                      key={item.id}
+                      handleRemoveMember={() => handleRemoveMember(item.id)}
                       member={item}
                     />
                   ))}
@@ -74,14 +78,18 @@ const CreateGroup = ({ setIsGroup }) => {
           {/* Search Results */}
           <div className="flex-1 overflow-auto">
             <div className="max-w-6xl mx-auto px-6">
-              {query && auth.searchUser?.map((item, index) => (
+              {query && auth.searchUser?.map((item) => (
                 <div
-                  key={index}
+                  key={item.id}
                   onClick={() => {
                     const updatedMembers = new Set(groupMember);
-                    updatedMembers.add(item);
-                    setGroupMember(updatedMembers);
-                    setQuery('');
+                    // Check to prevent adding duplicate members
+                    const existingMember = Array.from(updatedMembers).find(m => m.id === item.id);
+                    if (!existingMember) {
+                      updatedMembers.add(item);
+                      setGroupMember(updatedMembers);
+                      setQuery('');
+                    }
                   }}
                   className="hover:bg-gray-50 transition-colors cursor-pointer"
                 >
@@ -95,8 +103,14 @@ const CreateGroup = ({ setIsGroup }) => {
           <div className="bg-white border-t border-gray-200 p-4">
             <div className="max-w-6xl mx-auto flex justify-center">
               <button
-                onClick={() => setNewGroup(true)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-full shadow-lg transition-colors transform hover:scale-105"
+                onClick={() => {
+                  if (groupMember.size > 0) {
+                    setNewGroup(true);
+                  }
+                }}
+                disabled={groupMember.size === 0}
+                className={`bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-full shadow-lg transition-colors transform hover:scale-105 
+                  ${groupMember.size === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <BsArrowRight className="text-2xl" />
               </button>

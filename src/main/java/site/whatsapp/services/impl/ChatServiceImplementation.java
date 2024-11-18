@@ -2,7 +2,10 @@ package site.whatsapp.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import site.whatsapp.exception.ChatException;
 import site.whatsapp.exception.UserException;
@@ -14,6 +17,7 @@ import site.whatsapp.services.inter.ChatService;
 import site.whatsapp.services.inter.UserService;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -21,11 +25,14 @@ import java.util.*;
 public class ChatServiceImplementation implements ChatService {
     private final ChatRepository chatRepository;
     private final UserService userService;
+    private final RedisTemplate<String, Object> redisTemplate;
+
 
     @Override
     public ChatModel createChat(UserModel reqUser, UUID reqUser2) throws UserException {
         MDC.put("method", "createChat");
         log.info("[CHAT SERVER - createChat] Tạo cuộc trò chuyện giữa người dùng {} và người dùng {}", reqUser.getId(), reqUser2);
+
         UserModel userModel = userService.findUserById(reqUser2);
         ChatModel isChatExist = chatRepository.findSingleChatByUserIds(userModel, reqUser);
 
@@ -34,6 +41,7 @@ public class ChatServiceImplementation implements ChatService {
             MDC.clear();
             return isChatExist;
         }
+
         ChatModel newChat = ChatModel.builder()
                 .createdBy(reqUser)
                 .users(Set.of(userModel, reqUser))
@@ -94,6 +102,7 @@ public class ChatServiceImplementation implements ChatService {
     public ChatModel createGroup(GroupChatRequest groupChatRequest, UserModel reqUser) throws UserException {
         MDC.put("method", "createGroup");
         log.info("[CHAT SERVER - createGroup] Tạo nhóm trò chuyện với tên: {}", groupChatRequest.getChat_name());
+
         Set<UserModel> userSet = new HashSet<>();
         for (UUID userId : groupChatRequest.getUserIds()) {
             UserModel userModel = userService.findUserById(userId);
